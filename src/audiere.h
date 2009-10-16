@@ -69,6 +69,10 @@
 
 namespace audiere {
 
+  long AtomicIncrement(volatile long& var);
+  long AtomicDecrement(volatile long& var);
+
+
   class RefCounted {
   protected:
     /**
