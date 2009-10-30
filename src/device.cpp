@@ -17,6 +17,7 @@
   #include <mmsystem.h>
   #include "device_ds.h"
   #include "device_mm.h"
+  #include "device_file.h"
 
 #endif
 
@@ -197,6 +198,11 @@ namespace audiere {
         return 0;
       }
 
+      if (name == "file") {
+        TRY_DEVICE(FileAudioDevice);
+        return 0;
+      }
+
       if (name == "directsound") {
         TRY_DEVICE(DSAudioDevice);
         return 0;
@@ -243,6 +249,11 @@ namespace audiere {
           return 0;
         }
       #endif
+
+      if (name == "file") {
+        TRY_DEVICE(FileAudioDevice);
+        return 0;
+      }
 
       #ifdef HAVE_AL
         if (name == "al") {

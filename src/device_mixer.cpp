@@ -34,7 +34,7 @@ namespace audiere {
 
 
   int
-  MixerDevice::read(const int sample_count, void* samples) {
+  MixerDevice::read(const int sample_count, void* samples32) {
 //    ADR_GUARD("MixerDevice::read");
 
     SYNCHRONIZED(this);
@@ -52,7 +52,7 @@ namespace audiere {
   
     // if not, return zeroed samples
     if (!any_playing) {
-      memset(samples, 0, 4 * sample_count);
+      memset(samples32, 0, 4 * sample_count);
       return sample_count;
     }
 
@@ -62,36 +62,36 @@ namespace audiere {
     static const int BUFFER_SIZE = 4096;
 
     // mix the output in chunks of BUFFER_SIZE samples
-    s16* out = (s16*)samples;
+    s16* out16x2 = (s16*)samples32;
     int left = sample_count;
     while (left > 0) {
       int to_mix = std::min(BUFFER_SIZE, left);
 
-      s32 mix_buffer[BUFFER_SIZE];
-      memset(mix_buffer, 0, sizeof(mix_buffer));
+      s32 mix_buffer32x2[ BUFFER_SIZE * 2 ];
+      memset(mix_buffer32x2, 0, sizeof(mix_buffer32x2));
     
       for (std::list<MixerStream*>::iterator s = m_streams.begin();
            s != m_streams.end();
            ++s)
       {
         if ((*s)->m_is_playing) {
-          s16 stream_buffer[BUFFER_SIZE * 2];
-          (*s)->read(to_mix, stream_buffer);
+          s16 stream_buffer16x2[BUFFER_SIZE * 2];
+          (*s)->read(to_mix, stream_buffer16x2);
           for (int i = 0; i < to_mix * 2; ++i) {
-            mix_buffer[i] += stream_buffer[i];
+            mix_buffer32x2[i] += stream_buffer16x2[i];
           }
         }
       }
 
       // clamp each value in the buffer to the valid s16 range
       for (int i = 0; i < to_mix * 2; ++i) {
-        s32 mixed = mix_buffer[i];
+        s32 mixed = mix_buffer32x2[i];
         if (mixed < -32768) {
           mixed = -32768;
         } else if (mixed > 32767) {
           mixed = 32767;
         }
-        *out++ = (s16)mixed;
+        * out16x2++ = (s16)mixed;
       }
 
       left -= to_mix;
