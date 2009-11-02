@@ -40,7 +40,7 @@ int main(int argc, const char** argv) {
     output_filename = argv[2];
   }
 
-  SetFileDevicePathname( "myfilename.pcm" );
+  SetFileDevicePathname( "myfilename.wav" );
   AudioDevicePtr device = OpenDevice("file");
   if (!device) {
     cerr << "OpenDevice() failed" << endl;

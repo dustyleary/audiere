@@ -58,6 +58,8 @@ namespace audiere {
     // Set this before creating the device.
     static char m_pathname[ PATHNAME_LENGTH_MAX ];
     static bool m_pathnameValid;
+    static bool m_pathnameIsWav;
+    static int m_dataBytes;
 
     u8 m_samples[ BUFFER_BYTES ];
   };
