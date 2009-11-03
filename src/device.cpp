@@ -17,8 +17,13 @@
   #include <mmsystem.h>
   #include "device_ds.h"
   #include "device_mm.h"
+
+#endif
+
   #include "device_file.h"
 
+#ifdef HAVE_ALSA
+  #include "device_alsa.h"
 #endif
 
 #ifdef HAVE_OSS
@@ -35,6 +40,10 @@
 
 #ifdef HAVE_WINMM
   #include "device_mm.h"
+#endif
+
+#ifdef HAVE_PA
+  #include "device_pa.h"
 #endif
 
 
@@ -150,6 +159,9 @@ namespace audiere {
       "directsound:DirectSound (high-performance)"  ";"
       "winmm:Windows Multimedia (compatible)"  ";"
 #else
+#ifdef HAVE_ALSA
+      "alsa:Advanced Linux Sound Architecture"  ";"
+#endif
 #ifdef HAVE_OSS
       "oss:Open Sound System"  ";"
 #endif
@@ -162,6 +174,10 @@ namespace audiere {
 #ifdef HAVE_AL
       "al:SGI AL"  ";"
 #endif
+#ifdef HAVE_PA
+      "pa:portaudo compatible"  ";"
+#endif
+
 #endif
       "null:Null output (no sound)"  ;
   }
@@ -199,8 +215,8 @@ namespace audiere {
       }
 
       if (name == "file") {
-        TRY_DEVICE(FileAudioDevice);
-        return 0;
+          TRY_DEVICE(FileAudioDevice);
+          return 0;
       }
 
       if (name == "directsound") {
@@ -222,12 +238,21 @@ namespace audiere {
 
       if (name == "" || name == "autodetect") {
         // in decreasing order of sound API quality
+        TRY_GROUP("alsa");
         TRY_GROUP("al");
         TRY_GROUP("directsound");
         TRY_GROUP("winmm");
         TRY_GROUP("oss");
+	TRY_GROUP("portaudio");	
         return 0;
       }
+
+      #ifdef HAVE_ALSA
+        if (name == "alsa") {
+          TRY_DEVICE(ALSAAudioDevice);
+          return 0;
+        }
+      #endif
 
       #ifdef HAVE_OSS
         if (name == "oss") {
@@ -235,6 +260,12 @@ namespace audiere {
           return 0;
         }
       #endif
+
+      if (name == "file") {
+          TRY_DEVICE(FileAudioDevice);
+          return 0;
+      }
+
 
       #ifdef HAVE_DSOUND
         if (name == "directsound") {
@@ -250,18 +281,18 @@ namespace audiere {
         }
       #endif
 
-      if (name == "file") {
-        TRY_DEVICE(FileAudioDevice);
-        return 0;
-      }
-
       #ifdef HAVE_AL
         if (name == "al") {
           TRY_DEVICE(ALAudioDevice);
           return 0;
         }
       #endif
-
+      #ifdef HAVE_PA
+	if (name == "portaudio") {
+          TRY_DEVICE(PAAudioDevice);
+          return 0;
+	}
+      #endif
       if (name == "null") {
         TRY_DEVICE(NullAudioDevice);
         return 0;

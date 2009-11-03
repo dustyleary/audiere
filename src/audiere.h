@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <string>
+#include <cstring>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4786)
@@ -68,10 +69,6 @@
 
 
 namespace audiere {
-
-  long AtomicIncrement(volatile long& var);
-  long AtomicDecrement(volatile long& var);
-
 
   class RefCounted {
   protected:
@@ -187,39 +184,6 @@ namespace audiere {
   bool operator!=(const T* a, const RefPtr<T>& b) {
       return (a != b.get());
   }
-
-
-  /**
-   * A basic implementation of the RefCounted interface.  Derive
-   * your implementations from RefImplementation<YourInterface>.
-   */
-  template<class Interface>
-  class RefImplementation : public Interface {
-  protected:
-    RefImplementation() {
-      m_ref_count = 0;
-    }
-
-    /**
-     * So the implementation can put its destruction logic in the destructor,
-     * as natural C++ code does.
-     */
-    virtual ~RefImplementation() { }
-
-  public:
-    void ADR_CALL ref() {
-      AtomicIncrement(m_ref_count);
-    }
-
-    void ADR_CALL unref() {
-      if (AtomicDecrement(m_ref_count) == 0) {
-        delete this;
-      }
-    }
-
-  private:
-    volatile long m_ref_count;
-  };
 
 
   /**
@@ -1132,6 +1096,7 @@ namespace audiere {
       const char* name);  // Parameters?
   }
 
+ 
 
 
 
@@ -1263,13 +1228,14 @@ namespace audiere {
 
   inline void AdvanceFileDevice( int ms )
   {
-    return hidden::AdrAdvanceFileDevice( ms );
+      return hidden::AdrAdvanceFileDevice( ms );
   }
 
   inline void SetFileDevicePathname( char const * pn )
   {
-    return hidden::AdrSetFileDevicePathname( pn );
+      return hidden::AdrSetFileDevicePathname( pn );
   }
+
 
   /**
    * Create a streaming sample source from a sound file.  This factory simply
@@ -1592,6 +1558,39 @@ namespace audiere {
   inline MIDIDevice* OpenMIDIDevice(const char* device) {
     return hidden::AdrOpenMIDIDevice(device);
   }
+
+
+  /**
+   * A basic implementation of the RefCounted interface.  Derive
+   * your implementations from RefImplementation<YourInterface>.
+   */
+  template<class Interface>
+  class RefImplementation : public Interface {
+  protected:
+    RefImplementation() {
+      m_ref_count = 0;
+    }
+
+    /**
+     * So the implementation can put its destruction logic in the destructor,
+     * as natural C++ code does.
+     */
+    virtual ~RefImplementation() { }
+
+  public:
+    void ADR_CALL ref() {
+      AtomicIncrement(m_ref_count);
+    }
+
+    void ADR_CALL unref() {
+      if (AtomicDecrement(m_ref_count) == 0) {
+        delete this;
+      }
+    }
+
+  private:
+    volatile long m_ref_count;
+  };
 
 }
 

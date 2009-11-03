@@ -1,4 +1,4 @@
-#include <windows.h>
+//#include <windows.h>
 #include "device_file.h"
 #include "utility.h"
 

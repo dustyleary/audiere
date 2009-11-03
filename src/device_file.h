@@ -2,7 +2,7 @@
 #define DEVICE_FILE_H
 
 
-#include <windows.h>
+//#include <windows.h>
 #include <queue>
 #include "internal.h"
 #include "device_mixer.h"

@@ -167,7 +167,7 @@ namespace audiere {
     }
 
     int read(void* buffer, int size) {
-      int to_read = size < m_size ? size : m_size; // wdh: std::min(size, m_size);
+      int to_read = std::min(size, m_size);
       memcpy(buffer, m_buffer, to_read);
       memmove(m_buffer, m_buffer + to_read, m_size - to_read);
       m_size -= to_read;
