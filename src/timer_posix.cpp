@@ -8,7 +8,8 @@ namespace audiere {
 
   u64 GetNow() {
 
-#if HAVE_CLOCK_GETTIME
+// #if HAVE_CLOCK_GETTIME
+#if 0
     // use the POSIX realtime clock to get the current time
     struct timespec tp;
     int result = clock_gettime(CLOCK_REALTIME, &tp);
