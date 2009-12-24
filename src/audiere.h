@@ -1044,6 +1044,7 @@ namespace audiere {
       const char* parameters);
 
     ADR_FUNCTION( void ) AdrAdvanceFileDevice( int ms );
+    ADR_FUNCTION( long ) AdrCanAdvanceFileDevice( );
     ADR_FUNCTION( void ) AdrSetFileDevicePathname( char const * pn );
 
     ADR_FUNCTION(SampleSource*) AdrOpenSampleSource(
@@ -1224,6 +1225,11 @@ namespace audiere {
     const char* parameters = 0)
   {
     return hidden::AdrOpenDevice(name, parameters);
+  }
+
+  inline long CanAdvanceFileDevice()
+  {
+      return hidden::AdrCanAdvanceFileDevice();
   }
 
   inline void AdvanceFileDevice( int ms )

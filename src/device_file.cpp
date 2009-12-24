@@ -20,6 +20,10 @@ namespace audiere {
       FileAudioDevice::advance( ms );
   }
 
+  ADR_EXPORT( long ) AdrCanAdvanceFileDevice( ) {
+      return FileAudioDevice::canAdvance( );
+  }
+
   ADR_EXPORT( void ) AdrSetFileDevicePathname( char const * pn ) {
       FileAudioDevice::setPathname( pn );
   }
@@ -146,6 +150,10 @@ namespace audiere {
       m_requestTime += ms;
   }
 
+  long 
+  FileAudioDevice::canAdvance() {
+      return m_file && (m_outputTime >= m_requestTime);
+  }
 
   void
   FileAudioDevice::update() {
