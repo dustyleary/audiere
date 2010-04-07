@@ -21,6 +21,8 @@ namespace audiere {
     // audio streams, mixing and writing them to the file.  This call blocks, waiting
     // for the FileAudioDevice's output to reach the playhead.
     static void advance( int ms );
+
+    // Returns true if advance() will not block, i.e., if the device is all caught up.
     static long canAdvance( );
 
     // Prior to creating the device, you need to set the output pathname.
