@@ -36,6 +36,9 @@ namespace audiere {
     m_dataBytes = 0;
     size_t slen = m_pathname ? strlen( m_pathname ) : 0;
     m_pathnameIsWav = slen >= 4 && ( strcmp( m_pathname + slen - 4, ".wav" ) == 0 || strcmp( m_pathname + slen - 4, ".WAV" ) == 0 );
+#ifdef __GNUC__
+fwprintf(stdout, L"FileAudioDevice::create\n");
+#endif
     if( m_pathnameValid ) {
         file = fopen( m_pathname, "wb" );
 
@@ -101,10 +104,16 @@ namespace audiere {
 
   FileAudioDevice::~FileAudioDevice() 
   {
+#ifdef __GNUC__
+fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice START\n");
+#endif
       if( m_file ) {
 
           // Now that we know the length of the file, come back and write the header.
           if( m_pathnameIsWav ) {
+#ifdef __GNUC__
+fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice m_file && m_pathnameIsWav\n");
+#endif
               char buf[ WavHeaderBytes ];
               WriteChunkId( buf, "RIFF" );
               WriteUint32LittleEndian( buf + 4, 36 + m_dataBytes );
@@ -130,6 +139,9 @@ namespace audiere {
           fclose( ( FILE * ) m_file );
           m_file = NULL;
       }
+#ifdef __GNUC__
+fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice END\n");
+#endif
   }
 
   void 
