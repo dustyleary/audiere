@@ -28,6 +28,10 @@ namespace audiere {
       FileAudioDevice::setPathname( pn );
   }
 
+  ADR_EXPORT( void ) AdrFinalizeFileDeviceHeader( ) {
+      FileAudioDevice::finalizeHeader( );
+  }
+
   FileAudioDevice*
   FileAudioDevice::create(const ParameterList& parameters) {
     FILE * file = NULL;
@@ -103,6 +107,11 @@ fwprintf(stdout, L"FileAudioDevice::create\n");
 
 
   FileAudioDevice::~FileAudioDevice() 
+  {
+  }
+
+  void
+  FileAudioDevice::finalizeHeader()
   {
 #ifdef __GNUC__
 fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice START\n");

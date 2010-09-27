@@ -28,6 +28,9 @@ namespace audiere {
     // Prior to creating the device, you need to set the output pathname.
     static void setPathname( char const * );
 
+    // When done, finalize the file 
+    static void finalizeHeader();
+
   private:
     FileAudioDevice(FILE *, int rate);
     ~FileAudioDevice();
