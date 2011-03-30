@@ -347,7 +347,7 @@ namespace audiere {
     if (volume == 0) {
       return -10000;
     } else {
-      double attenuate = 1000 * log(1 / volume);
+      double attenuate = 1000 * log(1 / volume); // FIXME: This is a bug, since 1 / volume is unbounded.  Fails if volume = 9e-9.
       return int(-attenuate);
     }
   }
