@@ -115,7 +115,7 @@ fwprintf(stdout, L"FileAudioDevice::create\n");
   {
 #ifdef __GNUC__
 fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice START\n");
-#endif
+#endif 
       if( m_file ) {
 
           // Now that we know the length of the file, come back and write the header.
@@ -123,6 +123,7 @@ fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice START\n");
 #ifdef __GNUC__
 fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice m_file && m_pathnameIsWav\n");
 #endif
+
               char buf[ WavHeaderBytes ];
               WriteChunkId( buf, "RIFF" );
               WriteUint32LittleEndian( buf + 4, 36 + m_dataBytes );
