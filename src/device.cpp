@@ -302,6 +302,7 @@ namespace audiere {
 	}
       #endif
 
+
       #ifdef HAVE_CORE_AUDIO
 	if (name == "coreaudio") {
           TRY_DEVICE(CAAudioDevice);
