@@ -7,6 +7,8 @@
 #endif
 
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <map>
 #include <string>

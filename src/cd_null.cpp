@@ -4,6 +4,8 @@
 
 namespace audiere {
 
+    namespace hidden {
+
   ADR_EXPORT(const char*) AdrEnumerateCDDevices() {
     return "";
   }
@@ -11,5 +13,7 @@ namespace audiere {
   ADR_EXPORT(CDDevice*) AdrOpenCDDevice(const char* /*name*/) {
     return 0;
   }
+
+    }
 
 }
