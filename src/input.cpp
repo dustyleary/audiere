@@ -210,6 +210,40 @@ namespace audiere {
     return OpenSource(file, filename, file_format);
   }
 
+  ADR_EXPORT(SampleSource*) AdrOpenSampleSourceW(
+    const wchar_t* filename,
+    FileFormat file_format)
+  {
+    if (!filename) {
+      return 0;
+    }
+    FilePtr file = OpenFileW(filename, false);
+    if (!file) {
+      return 0;
+    }
+
+    // OpenSource just needs the filename extension as a hint to determine the file type.
+    wchar_t const * end = wcsrchr( filename, L'.' );
+    char const * filenameEnd = "";
+    static unsigned int const buflen = 10;
+    char buf[ buflen ];
+    if( end && wcslen( end ) + 1 < buflen ) {
+      unsigned int i;
+      wchar_t c;
+      for( i = 0; c = end[ i ]; i++ ) {
+        if( c >= 0x80 ) { // In the event of a non-ASCII extension, bail because it wouldn't have been useful anyway.
+          break;
+        }
+        buf[ i ] = ( char ) c;
+      }
+      if( c == 0 ) {
+        buf[ i ] = 0;
+        filenameEnd = buf;
+      }
+    }
+    return OpenSource(file, filenameEnd, file_format);
+  }
+
 
   ADR_EXPORT(SampleSource*) AdrOpenSampleSourceFromFile(
     File* file,

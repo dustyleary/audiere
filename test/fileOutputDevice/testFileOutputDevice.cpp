@@ -25,6 +25,7 @@ inline void sleepSecond() {
 
 #endif
 
+#undef ADR_SWITCH_PLAY
 
 int main(int argc, const char** argv) {
 
@@ -40,7 +41,33 @@ int main(int argc, const char** argv) {
     output_filename = argv[2];
   }
 
-  SetFileDevicePathname( "myfilename.wav" );
+#ifdef ADR_SWITCH_PLAY
+  AudioDevicePtr device = OpenDevice("");
+  if (!device) {
+    cerr << "OpenDevice() failed" << endl;
+    return EXIT_FAILURE;
+  }
+
+  cerr << "opened device" << endl;
+
+  const char * soundpn = argv[1];
+  OutputStreamPtr sound = OpenSound(device, argv[1]);
+  if (!sound) {
+    cerr << "OpenSound() failed" << endl;
+    return EXIT_FAILURE;
+  }
+
+  cerr << "opened sound" << endl;
+
+  sound->play();
+
+  cerr << "started playback" << endl;
+  while (sound->isPlaying()) {
+    Sleep( 100 );
+  }
+
+#else
+  SetFileDevicePathname( "myfilename2.wav" );
   AudioDevicePtr device = OpenDevice("file");
   if (!device) {
     cerr << "OpenDevice() failed" << endl;
@@ -67,6 +94,8 @@ int main(int argc, const char** argv) {
       cerr << "position: " << sound->getPosition() << endl;
     }
   }
+	FinalizeFileDeviceHeader();
 
+#endif
   return EXIT_SUCCESS;
 }

@@ -48,4 +48,23 @@ namespace audiere {
     return (file ? new CFile(file) : 0);
   }
 
+  ADR_EXPORT(File*) AdrOpenFileW(const wchar_t * filename, bool writeable) {
+#ifdef WIN32
+    FILE* file = _wfopen(filename, writeable ? L"wb" : L"rb");
+#else
+    // FIXME: convert to UTF-8 from platform native wchar_t Unicode encoding (e.g., UTF-32 on Unix, UTF-16 on Windows)
+    // FIXME: currently just slicing off the high bits, which doesn't work for international customers.
+    // http://stackoverflow.com/questions/12319/wfopen-equivalent-under-mac-os-x
+    unsigned int buflen = wcslen( pn ) + 1;
+    char * buf = new char[ buflen ];
+    unsigned int j;
+    for( j = 0; j < buflen; j++ ) {
+      buf[ j ] = ( char ) pn[ j ];
+    }
+    FILE* file = fopen( buf, writeable ? "wb" : "rb");
+    delete [] buf;
+#endif
+    return (file ? new CFile(file) : 0);
+  }
+
 }

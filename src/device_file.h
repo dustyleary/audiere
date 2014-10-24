@@ -27,6 +27,7 @@ namespace audiere {
 
     // Prior to creating the device, you need to set the output pathname.
     static void setPathname( char const * );
+    static void setPathnameW( wchar_t const * );
 
     // When done, finalize the file 
     static void finalizeHeader();
@@ -63,6 +64,7 @@ namespace audiere {
 
     // Set this before creating the device.
     static char m_pathname[ PATHNAME_LENGTH_MAX ];
+    static wchar_t m_pathnameW[ PATHNAME_LENGTH_MAX ];
     static bool m_pathnameValid;
     static bool m_pathnameIsWav;
     static int m_dataBytes;

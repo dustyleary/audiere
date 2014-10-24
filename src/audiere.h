@@ -1059,10 +1059,14 @@ namespace audiere {
     ADR_FUNCTION( void ) AdrAdvanceFileDevice( int ms );
     ADR_FUNCTION( long ) AdrCanAdvanceFileDevice( );
     ADR_FUNCTION( void ) AdrSetFileDevicePathname( char const * pn );
+    ADR_FUNCTION( void ) AdrSetFileDevicePathnameW( wchar_t const * pn );
     ADR_FUNCTION( void ) AdrFinalizeFileDeviceHeader( );
 
     ADR_FUNCTION(SampleSource*) AdrOpenSampleSource(
       const char* filename,
+      FileFormat file_format);
+    ADR_FUNCTION(SampleSource*) AdrOpenSampleSourceW(
+      const wchar_t * filename,
       FileFormat file_format);
     ADR_FUNCTION(SampleSource*) AdrOpenSampleSourceFromFile(
       File* file,
@@ -1096,6 +1100,10 @@ namespace audiere {
 
     ADR_FUNCTION(File*) AdrOpenFile(
       const char* name,
+      bool writeable);
+
+    ADR_FUNCTION(File*) AdrOpenFileW(
+      const wchar_t * name,
       bool writeable);
 
     ADR_FUNCTION(File*) AdrCreateMemoryFile(
@@ -1256,6 +1264,11 @@ namespace audiere {
       return hidden::AdrSetFileDevicePathname( pn );
   }
 
+  inline void SetFileDevicePathnameW( wchar_t const * pn )
+  {
+      return hidden::AdrSetFileDevicePathnameW( pn );
+  }
+
   inline void FinalizeFileDeviceHeader( )
   {
       return hidden::AdrFinalizeFileDeviceHeader( );
@@ -1274,6 +1287,12 @@ namespace audiere {
     FileFormat file_format = FF_AUTODETECT)
   {
     return hidden::AdrOpenSampleSource(filename, file_format);
+  }
+  inline SampleSource* OpenSampleSourceW(
+    const wchar_t * filename,
+    FileFormat file_format = FF_AUTODETECT)
+  {
+    return hidden::AdrOpenSampleSourceW(filename, file_format);
   }
 
   /**
@@ -1529,6 +1548,9 @@ namespace audiere {
    */
   inline File* OpenFile(const char* filename, bool writeable) {
     return hidden::AdrOpenFile(filename, writeable);
+  }
+  inline File* OpenFileW(const wchar_t* filename, bool writeable) {
+    return hidden::AdrOpenFileW(filename, writeable);
   }
 
   /**

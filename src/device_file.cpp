@@ -11,6 +11,7 @@ namespace audiere {
   volatile int FileAudioDevice::m_outputTime = 0;
   volatile bool FileAudioDevice::m_exists = false;
   char FileAudioDevice::m_pathname[];
+  wchar_t FileAudioDevice::m_pathnameW[];
   bool FileAudioDevice::m_pathnameValid = false;
   bool FileAudioDevice::m_pathnameIsWav = false;
   int FileAudioDevice::m_dataBytes = 0;
@@ -28,6 +29,10 @@ namespace audiere {
       FileAudioDevice::setPathname( pn );
   }
 
+  ADR_EXPORT( void ) AdrSetFileDevicePathnameW( wchar_t const * pn ) {
+      FileAudioDevice::setPathnameW( pn );
+  }
+
   ADR_EXPORT( void ) AdrFinalizeFileDeviceHeader( ) {
       FileAudioDevice::finalizeHeader( );
   }
@@ -40,11 +45,34 @@ namespace audiere {
     m_dataBytes = 0;
     size_t slen = m_pathname ? strlen( m_pathname ) : 0;
     m_pathnameIsWav = slen >= 4 && ( strcmp( m_pathname + slen - 4, ".wav" ) == 0 || strcmp( m_pathname + slen - 4, ".WAV" ) == 0 );
+    if( slen == 0 && m_pathnameW[ 0 ] ) {
+      slen = wcslen( m_pathnameW );
+      m_pathnameIsWav = slen >= 4 && ( wcscmp( m_pathnameW + slen - 4, L".wav" ) == 0 || wcscmp( m_pathnameW + slen - 4, L".WAV" ) == 0 );
+    }
 #ifdef __GNUC__
 fwprintf(stdout, L"FileAudioDevice::create\n");
 #endif
     if( m_pathnameValid ) {
+      if( m_pathname[ 0 ] ) {
         file = fopen( m_pathname, "wb" );
+      } else {
+
+#ifdef WIN32
+        file = _wfopen( m_pathnameW, L"wb" );
+#else
+        // FIXME: convert to UTF-8 from platform native wchar_t Unicode encoding (e.g., UTF-32 on Unix, UTF-16 on Windows)
+        // FIXME: currently just slicing off the high bits, which doesn't work for international customers.
+        // http://stackoverflow.com/questions/12319/wfopen-equivalent-under-mac-os-x
+        unsigned int buflen = wcslen( m_pathnameW ) + 1;
+        char * buf = new char[ buflen ];
+        unsigned int j;
+        for( j = 0; j < buflen; j++ ) {
+          buf[ j ] = ( char ) m_pathnameW[ j ];
+        }
+        file = fopen( buf, "wb" );
+        delete [] buf;
+#endif
+      }
 
         // If filename ends in ".wav" then write a wav header block to the file, which we'll come back
         // and fill in after writing the data.
@@ -115,7 +143,7 @@ fwprintf(stdout, L"FileAudioDevice::create\n");
   {
 #ifdef __GNUC__
 fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice START\n");
-#endif 
+#endif
       if( m_file ) {
 
           // Now that we know the length of the file, come back and write the header.
@@ -123,7 +151,6 @@ fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice START\n");
 #ifdef __GNUC__
 fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice m_file && m_pathnameIsWav\n");
 #endif
-
               char buf[ WavHeaderBytes ];
               WriteChunkId( buf, "RIFF" );
               WriteUint32LittleEndian( buf + 4, 36 + m_dataBytes );
@@ -157,6 +184,24 @@ fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice END\n");
   void 
   FileAudioDevice::setPathname( char const * pn ) {
     sprintf( m_pathname, "%s", pn );
+    m_pathnameW[ 0 ] = 0;
+    m_pathnameValid = true;
+  }
+
+  void 
+  FileAudioDevice::setPathnameW( wchar_t const * pn ) {
+    unsigned int i;
+    for( i = 0; i < PATHNAME_LENGTH_MAX; i++ ) {
+      wchar_t c = pn[ i ];
+      if( i == PATHNAME_LENGTH_MAX - 1 )  {
+        c = 0;
+      }
+      m_pathnameW[ i ] = c;
+      if( !c ) {
+        break;
+      }
+    }
+    m_pathname[ 0 ] = 0;
     m_pathnameValid = true;
   }
 
