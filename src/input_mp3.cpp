@@ -4,6 +4,8 @@
   turn out better than mpegsound did.
 */
 
+#ifndef NO_MPAUDEC
+
 #include <string.h>
 #include "input_mp3.h"
 #include "utility.h"
@@ -441,3 +443,6 @@ namespace audiere {
   }
 
 }
+
+#endif
+

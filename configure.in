@@ -35,6 +35,7 @@ AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_MAKE_SET
+AC_LIBTOOL_WIN32_DLL dnl Must be called before AC_PROG_LIBTOOL
 AM_PROG_LIBTOOL
 
 dnl We test with C++ libraries, so use the C++ compiler...
@@ -42,12 +43,24 @@ AC_LANG(C++)
 
 dnl Checks for libraries.
 
-dnl If building on Cygwin, don't let windows.h define min() or max()
+win32=no
+core_audio=no
 case $host in
-  *cygwin*)
+  *cygwin*|*mingw*)
+    dnl If building on Cygwin or mingw, don't let windows.h define min() or max()
     CXXFLAGS="-DWIN32_LEAN_AND_MEAN -DNOMINMAX -DADR_DECL= -DADR_CALL= $CXXFLAGS"
+    win32=yes
+    ;;
+  *darwin*)
+    AC_DEFINE(HAVE_CORE_AUDIO)
+    LIBS="-framework Cocoa -framework AudioUnit -framework AudioToolbox $LIBS"
+    EXTRA_LIBS="-framework Cocoa -framework AudioUnit -framework AudioToolbox $EXTRA_LIBS"
+    core_audio=yes;
     ;;
 esac
+
+AM_CONDITIONAL(WIN32, test "x$win32" = "xyes")
+AM_CONDITIONAL(HAVE_CORE_AUDIO, test "x$core_audio" = "xyes")
 
 dnl If building with gcc, build with all warnings except "class has virtual
 dnl functions but non-virtual destructor".
@@ -59,11 +72,13 @@ if test "x$GCC" = "xyes" ; then
 fi
 
 dnl Look for pthreads
+if test "x$win32" = "xno";then
 AC_CHECK_LIB(pthread, pthread_create,
     LIBS="-lpthread $LIBS"
     EXTRA_LIBS="-lpthread $EXTRA_LIBS"
   ,
     AC_MSG_ERROR(could not find pthread library))
+fi
 
 dnl Look for FLAC
 AC_CHECK_LIB(FLAC, FLAC__seekable_stream_decoder_process_single,
@@ -165,6 +180,11 @@ AM_CONDITIONAL(HAVE_OSS, test "x$HAVE_OSS" = "xtrue")
 
 AC_HEADER_STDC
 AC_CHECK_HEADER(unistd.h)
+AC_CHECK_HEADER(alsa/asoundlib.h,
+    HAVE_ALSA=true
+    LIBS="-lasound $LIBS"
+    EXTRA_LIBS="-lasound $EXTRA_LIBS"
+    AC_DEFINE(HAVE_ALSA))
 AM_CONDITIONAL(HAVE_ALSA, test "x$HAVE_ALSA" = "xtrue")
 
 AC_CHECK_HEADER(vorbis/vorbisfile.h,

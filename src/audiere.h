@@ -39,6 +39,7 @@
   #error Audiere requires C++
 #endif
 
+#ifndef AUDIERE_STATICLIB
 
 // DLLs in Windows should use the standard (Pascal) calling convention
 #ifndef ADR_CALL
@@ -62,7 +63,13 @@
 #  endif
 #endif
 
+#else
 
+// Not exporting under a static build, so remove the linkage specifiers
+#define ADR_CALL
+#define ADR_DECL
+
+#endif
 
 #define ADR_FUNCTION(ret) extern "C" ADR_DECL ret ADR_CALL
 #define ADR_METHOD(ret) virtual ret ADR_CALL
@@ -363,6 +370,12 @@ namespace audiere {
      * the tag comes from, i.e. "ID3v1", "ID3v2", or "vorbis".
      */
     virtual const char* ADR_CALL getTagType(int i) = 0;
+
+    /**
+     * Returns a logical name for the decoder being used
+     * it will be in the format <type>:<decoder>, so an example is: ogg:standard and mp3:mpaudec
+     */
+    virtual const char* ADR_CALL getDecoder() = 0;
   };
   typedef RefPtr<SampleSource> SampleSourcePtr;
 
