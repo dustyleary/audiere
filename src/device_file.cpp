@@ -89,6 +89,7 @@ fwprintf(stdout, L"FileAudioDevice::create\n");
             }
         }
     }
+      if(!file) return NULL;
     return new FileAudioDevice(file, RATE);
   }
 
