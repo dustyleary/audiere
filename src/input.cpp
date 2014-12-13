@@ -230,7 +230,7 @@ namespace audiere {
     if( end && wcslen( end ) + 1 < buflen ) {
       unsigned int i;
       wchar_t c;
-      for( i = 0; c = end[ i ]; i++ ) {
+      for( i = 0; (c = end[ i ]); i++ ) {
         if( c >= 0x80 ) { // In the event of a non-ASCII extension, bail because it wouldn't have been useful anyway.
           break;
         }
