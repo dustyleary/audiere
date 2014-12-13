@@ -86,7 +86,7 @@ namespace audiere {
      * Interfaces that derive from RefCounted should define an inline,
      * empty, protected destructor as well.
      */
-    ~RefCounted() { }
+    virtual ~RefCounted() { }
 
   public:
     /**
