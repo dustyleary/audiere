@@ -20,7 +20,7 @@
  * stand-alone mpaudec library.  Based on mpegaudiodec.c from libavcodec.
  */
 
-/*#define DEBUG*/
+/*#define DEBUG_MPAUDEC*/
 
 #ifndef NO_MPAUDEC
 
@@ -92,7 +92,7 @@ typedef struct MPADecodeContext {
     int synth_buf_offset[MPA_MAX_CHANNELS];
     int32_t sb_samples[MPA_MAX_CHANNELS][36][SBLIMIT];
     int32_t mdct_buf[MPA_MAX_CHANNELS][SBLIMIT * 18]; /* previous samples, for layer 3 MDCT */
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
     int frame_count;
 #endif
 } MPADecodeContext;
@@ -336,7 +336,7 @@ int mpaudec_init(MPAuDecContext * mpctx)
             scale_factor_mult[i][0] = MULL(FIXR(1.0 * 2.0), norm);
             scale_factor_mult[i][1] = MULL(FIXR(0.7937005259 * 2.0), norm);
             scale_factor_mult[i][2] = MULL(FIXR(0.6299605249 * 2.0), norm);
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
             printf("%d: norm=%x s=%x %x %x\n",
                    i, norm,
                    scale_factor_mult[i][0],
@@ -432,7 +432,7 @@ int mpaudec_init(MPAuDecContext * mpctx)
                 k = i & 1;
                 is_table_lsf[j][k ^ 1][i] = FIXR(f);
                 is_table_lsf[j][k][i] = FIXR(1.0);
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
                 printf("is_table_lsf %d %d: %x %x\n",
                        i, j, is_table_lsf[j][0][i], is_table_lsf[j][1][i]);
 #endif
@@ -478,7 +478,7 @@ int mpaudec_init(MPAuDecContext * mpctx)
             }
         }
 
-#if defined(DEBUG)
+#if defined(DEBUG_MPAUDEC)
         for(j=0;j<8;j++) {
             printf("win%d=\n", j);
             for(i=0;i<36;i++)
@@ -492,7 +492,7 @@ int mpaudec_init(MPAuDecContext * mpctx)
     s->inbuf_index = 0;
     s->inbuf = &s->inbuf1[s->inbuf_index][BACKSTEP_SIZE];
     s->inbuf_ptr = s->inbuf;
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
     s->frame_count = 0;
 #endif
     return 0;
@@ -1153,7 +1153,7 @@ static int decode_header(MPADecodeContext *s, uint32_t header)
         }
     }
 
-#if defined(DEBUG)
+#if defined(DEBUG_MPAUDEC)
     printf("layer%d, %d Hz, %d kbits/s, ",
            s->layer, s->sample_rate, s->bit_rate);
     if (s->nb_channels == 2) {
@@ -1282,7 +1282,7 @@ static int mp_decode_layer2(MPADecodeContext *s)
     else
         bound = sblimit;
 
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
     printf("bound=%d sblimit=%d\n", bound, sblimit);
 #endif
     /* parse bit allocation */
@@ -1302,7 +1302,7 @@ static int mp_decode_layer2(MPADecodeContext *s)
         j += 1 << bit_alloc_bits;
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
     {
         for(ch=0;ch<s->nb_channels;ch++) {
             for(i=0;i<sblimit;i++)
@@ -1352,7 +1352,7 @@ static int mp_decode_layer2(MPADecodeContext *s)
         }
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
     for(ch=0;ch<s->nb_channels;ch++) {
         for(i=0;i<sblimit;i++) {
             if (bit_alloc[ch][i]) {
@@ -1596,7 +1596,7 @@ static int huffman_decode(MPADecodeContext *s, GranuleDef *g,
                 x = 0;
                 y = 0;
             }
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
             printf("region=%d n=%d x=%d y=%d exp=%d\n",
                    i, g->region_size[i] - j, x, y, exponents[s_index]);
 #endif
@@ -1640,7 +1640,7 @@ static int huffman_decode(MPADecodeContext *s, GranuleDef *g,
         last_gb= s->gb;
 
         code = get_vlc(&s->gb, vlc);
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
         printf("t=%d code=%d\n", g->count1table_select, code);
 #endif
         if (code < 0)
@@ -1993,7 +1993,7 @@ static int mp_decode_layer3(MPADecodeContext *s)
 
     for(gr=0;gr<nb_granules;gr++) {
         for(ch=0;ch<s->nb_channels;ch++) {
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
             printf("gr=%d ch=%d: side_info\n", gr, ch);
 #endif
             g = &granules[ch][gr];
@@ -2040,7 +2040,7 @@ static int mp_decode_layer3(MPADecodeContext *s)
                 /* compute huffman coded region sizes */
                 region_address1 = get_bits(&s->gb, 4);
                 region_address2 = get_bits(&s->gb, 3);
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
                 printf("region1=%d region2=%d\n",
                        region_address1, region_address2);
 #endif
@@ -2096,7 +2096,7 @@ static int mp_decode_layer3(MPADecodeContext *s)
                 g->preflag = get_bits(&s->gb, 1);
             g->scalefac_scale = get_bits(&s->gb, 1);
             g->count1table_select = get_bits(&s->gb, 1);
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
             printf("block_type=%d switch_point=%d\n",
                    g->block_type, g->switch_point);
 #endif
@@ -2104,7 +2104,7 @@ static int mp_decode_layer3(MPADecodeContext *s)
     }
 
     /* now we get bits from the main_data_begin offset */
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
     printf("seekback: %d\n", main_data_begin);
 #endif
     seek_to_maindata(s, main_data_begin);
@@ -2122,7 +2122,7 @@ static int mp_decode_layer3(MPADecodeContext *s)
                 /* MPEG1 scale factors */
                 slen1 = slen_table[0][g->scalefac_compress];
                 slen2 = slen_table[1][g->scalefac_compress];
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
                 printf("slen1=%d slen2=%d\n", slen1, slen2);
 #endif
                 if (g->block_type == 2) {
@@ -2153,7 +2153,7 @@ static int mp_decode_layer3(MPADecodeContext *s)
                     }
                     g->scale_factors[j++] = 0;
                 }
-#if defined(DEBUG)
+#if defined(DEBUG_MPAUDEC)
                 {
                     printf("scfsi=%x gr=%d ch=%d scale_factors:\n",
                            g->scfsi, gr, ch);
@@ -2210,7 +2210,7 @@ static int mp_decode_layer3(MPADecodeContext *s)
                 /* XXX: should compute exact size */
                 for(;j<40;j++)
                     g->scale_factors[j] = 0;
-#if defined(DEBUG)
+#if defined(DEBUG_MPAUDEC)
                 {
                     printf("gr=%d ch=%d scale_factors:\n",
                            gr, ch);
@@ -2231,7 +2231,7 @@ static int mp_decode_layer3(MPADecodeContext *s)
             /* skip extension bits */
             bits_left = g->part2_3_length - (get_bits_count(&s->gb) - bits_pos);
             if (bits_left < 0) {
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
                 printf("bits_left=%d\n", bits_left);
 #endif
                 return -1;
@@ -2271,7 +2271,7 @@ static int mp_decode_frame(MPADecodeContext *s,
     if (s->error_protection)
         get_bits(&s->gb, 16);
 
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
     printf("frame %d:\n", s->frame_count);
 #endif
     switch(s->layer) {
@@ -2286,7 +2286,7 @@ static int mp_decode_frame(MPADecodeContext *s,
         nb_frames = mp_decode_layer3(s);
         break;
     }
-#if defined(DEBUG)
+#if defined(DEBUG_MPAUDEC)
     for(i=0;i<nb_frames;i++) {
         for(ch=0;ch<s->nb_channels;ch++) {
             int j;
@@ -2306,7 +2306,7 @@ static int mp_decode_frame(MPADecodeContext *s,
             samples_ptr += 32 * s->nb_channels;
         }
     }
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
     s->frame_count++;
 #endif
     return nb_frames * 32 * sizeof(short) * s->nb_channels;
@@ -2348,7 +2348,7 @@ int mpaudec_decode_frame(MPAuDecContext * mpctx,
                     /* no sync found : move by one byte (inefficient, but simple!) */
                     memmove(s->inbuf, s->inbuf + 1, s->inbuf_ptr - s->inbuf - 1);
                     s->inbuf_ptr--;
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
                     printf("skip %x\n", header);
 #endif
                     /* reset free format frame size to give a chance
@@ -2421,7 +2421,7 @@ int mpaudec_decode_frame(MPAuDecContext * mpctx,
                             s->free_format_frame_size -= padding * 4;
                         else
                             s->free_format_frame_size -= padding;
-#ifdef DEBUG
+#ifdef DEBUG_MPAUDEC
                         printf("free frame size=%d padding=%d\n",
                                s->free_format_frame_size, padding);
 #endif
