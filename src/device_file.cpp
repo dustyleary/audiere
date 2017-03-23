@@ -6,43 +6,37 @@
 namespace audiere {
 
   static const int RATE = 44100;
-  volatile FILE * FileAudioDevice::m_file = NULL;
-  volatile int FileAudioDevice::m_requestTime = 0;
-  volatile int FileAudioDevice::m_outputTime = 0;
-  volatile bool FileAudioDevice::m_exists = false;
   char FileAudioDevice::m_pathname[];
   wchar_t FileAudioDevice::m_pathnameW[];
   bool FileAudioDevice::m_pathnameValid = false;
   bool FileAudioDevice::m_pathnameIsWav = false;
-  int FileAudioDevice::m_dataBytes = 0;
   int const WavHeaderBytes = 44;
 
+  FileAudioDevice* global_device = NULL;
+
   ADR_EXPORT( void ) AdrAdvanceFileDevice( int ms ) {
-      FileAudioDevice::advance( ms );
+      global_device->advance( ms );
   }
 
   ADR_EXPORT( long ) AdrCanAdvanceFileDevice( ) {
-      return FileAudioDevice::canAdvance( );
+      return global_device->canAdvance( );
   }
 
   ADR_EXPORT( void ) AdrSetFileDevicePathname( char const * pn ) {
-      FileAudioDevice::setPathname( pn );
+      global_device->setPathname( pn );
   }
 
   ADR_EXPORT( void ) AdrSetFileDevicePathnameW( wchar_t const * pn ) {
-      FileAudioDevice::setPathnameW( pn );
+      global_device->setPathnameW( pn );
   }
 
   ADR_EXPORT( void ) AdrFinalizeFileDeviceHeader( ) {
-      FileAudioDevice::finalizeHeader( );
+      global_device->finalizeHeader( );
   }
 
   FileAudioDevice*
   FileAudioDevice::create(const ParameterList& parameters) {
     FILE * file = NULL;
-    m_requestTime = 0;
-    m_outputTime = 0;
-    m_dataBytes = 0;
     size_t slen = m_pathname ? strlen( m_pathname ) : 0;
     m_pathnameIsWav = slen >= 4 && ( strcmp( m_pathname + slen - 4, ".wav" ) == 0 || strcmp( m_pathname + slen - 4, ".WAV" ) == 0 );
     if( slen == 0 && m_pathnameW[ 0 ] ) {
@@ -89,8 +83,10 @@ fwprintf(stdout, L"FileAudioDevice::create\n");
             }
         }
     }
-      if(!file) return NULL;
-    return new FileAudioDevice(file, RATE);
+    if(!file) return NULL;
+    FileAudioDevice* result = new FileAudioDevice(file, RATE);
+    global_device = result;
+    return result;
   }
 
 
@@ -100,7 +96,6 @@ fwprintf(stdout, L"FileAudioDevice::create\n");
     ADR_GUARD("FileAudioDevice::FileAudioDevice");
 
     m_file = file;
-    m_exists = true;
     m_outputTime = 0;
     m_requestTime = 0;
   }
@@ -211,11 +206,8 @@ fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice END\n");
       if( !m_file ) {
           return;
       }
-      volatile int i = 0;
-      while( m_outputTime < m_requestTime ) {
-          i++; // Don't optimize out the loop, please.
-      }
       m_requestTime += ms;
+      internal_update();
   }
 
   long 
@@ -226,8 +218,19 @@ fwprintf(stdout, L"FileAudioDevice::~FileAudioDevice END\n");
   void
   FileAudioDevice::update() {
     ADR_GUARD("FileAudioDevice::update");
+    internal_update();
+  }
+
+  void
+  FileAudioDevice::internal_update() {
+    ADR_GUARD("FileAudioDevice::internal_update");
     int timeDelta = m_requestTime - m_outputTime;
-    int samples = timeDelta * RATE / 1000; // If stepping by multiple of 10ms, then no rounding error.
+    double samples_d = timeDelta * RATE / 1000.0;
+    int samples = int(samples_d);
+    if(samples_d != samples) {
+      ADR_LOG("rounding error");
+      fprintf(stderr, "rounding error\n");
+    }
     while( samples > 0 ) {
         int isamples = samples < BUFFER_SAMPLES ? samples : BUFFER_SAMPLES;
 

@@ -20,23 +20,24 @@ namespace audiere {
     // function advances the time up to which the FileAudioDevice will play forward the
     // audio streams, mixing and writing them to the file.  This call blocks, waiting
     // for the FileAudioDevice's output to reach the playhead.
-    static void advance( int ms );
+    void advance( int ms );
 
     // Returns true if advance() will not block, i.e., if the device is all caught up.
-    static long canAdvance( );
+    long canAdvance( );
 
     // Prior to creating the device, you need to set the output pathname.
     static void setPathname( char const * );
     static void setPathnameW( wchar_t const * );
 
     // When done, finalize the file 
-    static void finalizeHeader();
+    void finalizeHeader();
 
   private:
     FileAudioDevice(FILE *, int rate);
     ~FileAudioDevice();
 
   public:
+    void ADR_CALL internal_update();
     void ADR_CALL update();
     const char* ADR_CALL getName();
 
@@ -49,25 +50,22 @@ namespace audiere {
       PATHNAME_LENGTH_MAX = 2048,
     };
 
-    static volatile FILE * m_file;
+    volatile FILE * m_file = 0;
 
     // The time up to which the FileAudioDevice may output.  Incremented by the call
     // to ::advance().  Monotonically increases.  Never reset.  Stops working when wraps around but that 
     // isn't for 2^31ms, which is a long time (300hrs).
-    static volatile int m_requestTime;
+    volatile int m_requestTime = 0;
 
     // The time up to which the FileAudioDevice has already output.
-    static volatile int  m_outputTime;
-
-    // Only one FileAudioDevice can exist at a time, to avoid conflicts with static variables.
-    static volatile bool  m_exists;
+    volatile int  m_outputTime = 0;
 
     // Set this before creating the device.
     static char m_pathname[ PATHNAME_LENGTH_MAX ];
     static wchar_t m_pathnameW[ PATHNAME_LENGTH_MAX ];
     static bool m_pathnameValid;
     static bool m_pathnameIsWav;
-    static int m_dataBytes;
+    int m_dataBytes;
 
     u8 m_samples[ BUFFER_BYTES ];
   };
