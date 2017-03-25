@@ -26,14 +26,13 @@ namespace audiere {
     long canAdvance( );
 
     // Prior to creating the device, you need to set the output pathname.
-    static void setPathname( char const * );
     static void setPathnameW( wchar_t const * );
 
     // When done, finalize the file 
     void finalizeHeader();
 
   private:
-    FileAudioDevice(FILE *, int rate);
+    FileAudioDevice(FILE *, int rate, bool is_wav);
     ~FileAudioDevice();
 
   public:
@@ -47,24 +46,19 @@ namespace audiere {
     enum {
       BUFFER_SAMPLES = 16000,
       BUFFER_BYTES = BUFFER_SAMPLES * 4,
-      PATHNAME_LENGTH_MAX = 2048,
     };
 
-    volatile FILE * m_file = 0;
+    FILE * m_file = 0;
+    bool is_wav_ = false;
 
     // The time up to which the FileAudioDevice may output.  Incremented by the call
     // to ::advance().  Monotonically increases.  Never reset.  Stops working when wraps around but that 
     // isn't for 2^31ms, which is a long time (300hrs).
-    volatile int m_requestTime = 0;
+    int m_requestMs = 0;
 
-    // The time up to which the FileAudioDevice has already output.
-    volatile int  m_outputTime = 0;
+    int m_requestSample = 0;
+    int m_outputSample = 0;
 
-    // Set this before creating the device.
-    static char m_pathname[ PATHNAME_LENGTH_MAX ];
-    static wchar_t m_pathnameW[ PATHNAME_LENGTH_MAX ];
-    static bool m_pathnameValid;
-    static bool m_pathnameIsWav;
     int m_dataBytes;
 
     u8 m_samples[ BUFFER_BYTES ];
