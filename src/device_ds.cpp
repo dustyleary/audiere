@@ -51,7 +51,7 @@ namespace audiere {
 
     // create anonymous window
     HWND anonymous_window = CreateWindowA(
-      "AudiereHiddenWindow", "", WS_POPUP,
+      "AudiereHiddenWindow", "AudiereHiddenWindow", WS_POPUP,
       0, 0, 0, 0,
       NULL, NULL, GetModuleHandle(NULL), NULL);
     if (!anonymous_window) {
