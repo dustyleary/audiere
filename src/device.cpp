@@ -60,9 +60,11 @@ namespace audiere {
     if (!result) {
       ADR_LOG("THREAD CREATION FAILED");
     }
+    logToFinale(strprintf("AbstractDevice() this %p", this));
   }
 
   AbstractDevice::~AbstractDevice() {
+    logToFinale(strprintf("~AbstractDevice() 1 this %p", this));
     m_thread_should_die = true;
 
     // Trick the thread into no longer waiting.
@@ -71,6 +73,8 @@ namespace audiere {
     while (m_thread_exists) {
       AI_Sleep(50);
     }
+    
+    logToFinale(strprintf("~AbstractDevice() 2 this %p", this));
   }
 
   void AbstractDevice::registerCallback(Callback* callback) {

@@ -29,6 +29,7 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include <functional>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4786)
@@ -1638,6 +1639,15 @@ namespace audiere {
   private:
     volatile long m_ref_count;
   };
+
+
+  extern std::function<void(const std::string& str)> g_finale_log_endpoint_;
+  static void setFinaleLogEndpoint(std::function<void(const std::string& str)> f) {
+    g_finale_log_endpoint_ = f;
+  }
+  static void logToFinale(const std::string& str) {
+    g_finale_log_endpoint_( str );
+  }
 
 }
 

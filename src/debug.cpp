@@ -5,8 +5,11 @@
 #include "debug.h"
 
 #include <cstdlib>
+#include <functional>
 
 namespace audiere {
+
+  std::function<void(const std::string& str)> g_finale_log_endpoint_;
 
   FILE* Log::handle;
   int Log::indent_count;

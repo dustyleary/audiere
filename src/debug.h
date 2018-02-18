@@ -4,7 +4,34 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include <string>
+
+
+//#define ADR_FORCE_DEBUG
+
+
+#if defined(ADR_FORCE_DEBUG)
+
+  #define ADR_GUARD(label) Guard guard_obj__(label)
+  #define ADR_LOG(label)   (Log::Write(label))
+  #define ADR_IF_DEBUG     if (true)
+
+  #ifdef _MSC_VER
+    #define ADR_ASSERT(condition, label) if (!(condition)) { __asm int 3 }
+  #else  // assume x86 gcc
+    #define ADR_ASSERT(condition, label) assert(condition && label);
+  #endif
+
+#else
+
+  #define ADR_GUARD(label) 
+  #define ADR_LOG(label)
+  #define ADR_IF_DEBUG     if (false)
+  #define ADR_ASSERT(condition, label)
+
+#endif
 
 
 namespace audiere {
@@ -47,32 +74,21 @@ namespace audiere {
     std::string m_label;
   };
 
+  static std::string vstrprintf(const char* fmt, va_list ap) {
+    char buf[65536*4];
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    buf[sizeof(buf)-1] = 0;
+    return std::string(buf);
+  }
+
+  static std::string strprintf(const char* fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    std::string result = vstrprintf(fmt, ap);
+    va_end(ap);
+    return result;
+  }
 }
-
-
-//#define ADR_FORCE_DEBUG
-
-
-#if defined(ADR_FORCE_DEBUG)
-
-  #define ADR_GUARD(label) Guard guard_obj__(label)
-  #define ADR_LOG(label)   (Log::Write(label))
-  #define ADR_IF_DEBUG     if (true)
-
-  #ifdef _MSC_VER
-    #define ADR_ASSERT(condition, label) if (!(condition)) { __asm int 3 }
-  #else  // assume x86 gcc
-    #define ADR_ASSERT(condition, label) assert(condition && label);
-  #endif
-
-#else
-
-  #define ADR_GUARD(label) 
-  #define ADR_LOG(label)
-  #define ADR_IF_DEBUG     if (false)
-  #define ADR_ASSERT(condition, label)
-
-#endif
 
 
 #endif
