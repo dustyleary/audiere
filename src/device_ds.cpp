@@ -123,10 +123,13 @@ namespace audiere {
     m_min_buffer_length = min_buffer_length;
     m_anonymous_window  = anonymous_window;
     m_direct_sound      = direct_sound;
+    logToFinale(strprintf("DSAudioDevice() this %p", this));
   }
 
 
   DSAudioDevice::~DSAudioDevice() {
+    logToFinale(strprintf("~DSAudioDevice() 1 this %p", this));
+
     ADR_ASSERT(m_open_streams.empty(),
       "DirectSound device should not die with open streams");
     ADR_ASSERT(m_open_buffers.empty(),
@@ -145,6 +148,8 @@ namespace audiere {
     }
 
     CoUninitialize();
+
+    logToFinale(strprintf("~DSAudioDevice() 2 this %p", this));
   }
 
 

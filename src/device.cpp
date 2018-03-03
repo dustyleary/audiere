@@ -116,10 +116,12 @@ namespace audiere {
 
   void AbstractDevice::eventThread() {
     ADR_GUARD("AbstractDevice::eventThread");
+    logToFinale(strprintf("AbstractDevice::eventThread() this %p", this));
     m_thread_exists = true;
     while (!m_thread_should_die) {
       m_event_mutex.lock();
       while (m_events.empty()) {
+        logToFinale(strprintf("AbstractDevice::eventThread() this %p wait", this));
         m_events_available.wait(m_event_mutex, 1);
         if (m_thread_should_die) {
           break;
@@ -144,10 +146,13 @@ namespace audiere {
       // Process the events.
       while (!events.empty()) {
         EventPtr event = events.front();
+        logToFinale(strprintf("AbstractDevice::eventThread() this %p event type %d", this, event->getType()));
         events.pop();
         processEvent(event.get());
+        logToFinale(strprintf("AbstractDevice::eventThread() this %p event type %d processed", this, event->getType()));
       }
     }
+    logToFinale(strprintf("AbstractDevice::eventThread() done, this %p", this));
     m_thread_exists = false;
   }
 
