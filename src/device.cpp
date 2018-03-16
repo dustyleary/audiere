@@ -56,15 +56,13 @@ namespace audiere {
     m_thread_exists = false;
     m_thread_should_die = false;
 
-    bool result = AI_CreateThread(eventThread, this, 2);
-    if (!result) {
-      ADR_LOG("THREAD CREATION FAILED");
-    }
-    logToFinale(strprintf("AbstractDevice() this %p", this));
+    // bool result = AI_CreateThread(eventThread, this, 2);
+    // if (!result) {
+    //   ADR_LOG("THREAD CREATION FAILED");
+    // }
   }
 
   AbstractDevice::~AbstractDevice() {
-    logToFinale(strprintf("~AbstractDevice() 1 this %p", this));
     m_thread_should_die = true;
 
     // Trick the thread into no longer waiting.
@@ -73,11 +71,15 @@ namespace audiere {
     while (m_thread_exists) {
       AI_Sleep(50);
     }
-    
-    logToFinale(strprintf("~AbstractDevice() 2 this %p", this));
   }
 
   void AbstractDevice::registerCallback(Callback* callback) {
+    //fireStopEvent was the only way a callback could be called, but it's broken so I disabled it
+    //we never were registering any callback anyway, so I disabled the whole event thread
+    //--dusty 2018-03-16
+    logToFinale(strprintf("registerCallback() called but support has been removed!"));
+    logToFinale(strprintf("registerCallback() called but support has been removed!"));
+    logToFinale(strprintf("registerCallback() called but support has been removed!"));
     m_callbacks.push_back(callback);
   }
 
@@ -95,15 +97,15 @@ namespace audiere {
   }
 
   void AbstractDevice::fireStopEvent(OutputStreamPtr stream, StopEvent::Reason reason) {
-    StopEventPtr event = new StopEventImpl(stream, reason);
-    fireStopEvent(event);
+    // StopEventPtr event = new StopEventImpl(stream, reason);
+    // fireStopEvent(event);
   }
 
   void AbstractDevice::fireStopEvent(const StopEventPtr& event) {
-    m_event_mutex.lock();
-    m_events.push(event.get());
-    m_event_mutex.unlock();
-    m_events_available.notify();
+    // m_event_mutex.lock();
+    // m_events.push(event.get());
+    // m_event_mutex.unlock();
+    // m_events_available.notify();
   }
 
   void AbstractDevice::eventThread(void* arg) {
@@ -116,12 +118,10 @@ namespace audiere {
 
   void AbstractDevice::eventThread() {
     ADR_GUARD("AbstractDevice::eventThread");
-    logToFinale(strprintf("AbstractDevice::eventThread() this %p", this));
     m_thread_exists = true;
     while (!m_thread_should_die) {
       m_event_mutex.lock();
       while (m_events.empty()) {
-        logToFinale(strprintf("AbstractDevice::eventThread() this %p wait", this));
         m_events_available.wait(m_event_mutex, 1);
         if (m_thread_should_die) {
           break;
@@ -146,13 +146,10 @@ namespace audiere {
       // Process the events.
       while (!events.empty()) {
         EventPtr event = events.front();
-        logToFinale(strprintf("AbstractDevice::eventThread() this %p event type %d", this, event->getType()));
         events.pop();
         processEvent(event.get());
-        logToFinale(strprintf("AbstractDevice::eventThread() this %p event type %d processed", this, event->getType()));
       }
     }
-    logToFinale(strprintf("AbstractDevice::eventThread() done, this %p", this));
     m_thread_exists = false;
   }
 
