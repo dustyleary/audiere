@@ -138,6 +138,8 @@ namespace audiere {
 
       // Now that we know the length of the file, come back and write the header.
       if( is_wav_ ) {
+        //logToFinale( strprintf( "FileAudioDevice::finalizeHeader() this %p m_dataBytes %d", this, m_dataBytes ));
+
         char buf[ WavHeaderBytes ];
         WriteChunkId( buf, "RIFF" );
         WriteUint32LittleEndian( buf + 4, 36 + m_dataBytes );
@@ -196,6 +198,7 @@ namespace audiere {
             size_t bytes = isamples * 4;
             size_t rl = fwrite( m_samples, 1, bytes, ( FILE * ) m_file );
             m_dataBytes += bytes;
+            //logToFinale( strprintf( "FileAudioDevice::internal_update() bytes %d m_dataBytes %d", bytes, m_dataBytes ));
             if( rl != bytes ) {
                 fclose( ( FILE * ) m_file );
                 m_file = NULL;

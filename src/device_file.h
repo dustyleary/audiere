@@ -59,7 +59,7 @@ namespace audiere {
     int m_requestSample = 0;
     int m_outputSample = 0;
 
-    int m_dataBytes;
+    int m_dataBytes = 0;
 
     u8 m_samples[ BUFFER_BYTES ];
   };
